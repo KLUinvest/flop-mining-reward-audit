@@ -1,0 +1,2 @@
+https://github.com/flop-labs/yellowpaper @ 70e691c758e53eed17a016a02b0a2ae1200d3744
+https://flop.finance/intro/yellowpaper/ (rendered mirror, cross-checked, website banner stale vs GitHub at analysis time)

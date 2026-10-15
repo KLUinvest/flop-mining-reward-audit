@@ -1,0 +1,87 @@
+[
+  {
+    "test": "R9.2 halving schedule 96->3",
+    "ok": true,
+    "detail": "schedule=['96', '48', '24', '12', '6', '3'] computed_floor=3 param_floor_reward=3"
+  },
+  {
+    "test": "R9.5/R9.12 four-leg split sums to 1000 ppt",
+    "ok": true,
+    "detail": "miner=750 validator=100 agent=100 staker=50 sum=1000"
+  },
+  {
+    "test": "\u00a79 era-0 absolute block-reward split matches yellowpaper table",
+    "ok": true,
+    "detail": "computed={'miner': '72', 'validator': '9.6', 'agent': '9.6', 'staker': '4.8'} expected={'miner': '72', 'validator': '9.6', 'agent': '9.6', 'staker': '4.8'}"
+  },
+  {
+    "test": "R9.4/R9.7 genesis buckets sum to genesis_supply",
+    "ok": true,
+    "detail": "miner=1200000000 validator=1200000000 agent=1200000000 reserve=800000000 sum=4400000000 genesis_supply=4400000000"
+  },
+  {
+    "test": "R9.3 subsidy duration = 5 * halving_interval_blocks",
+    "ok": true,
+    "detail": "duration=315360000 halving_interval_blocks=63072000"
+  },
+  {
+    "test": "R9.3 subsidy total = 1,955,232,000 FLOP",
+    "ok": true,
+    "detail": "pair_per_era=['16', '8', '4', '2', '1'] total=1955232000"
+  },
+  {
+    "test": "R8.7 Miner grant unlock formula spot-checks",
+    "ok": true,
+    "detail": "P=1000 S=0 credit=0 -> got=250 expected=250 ok=True; P=1000 S=0 credit=100 -> got=350 expected=350 ok=True; P=1000 S=0 credit=1000 -> got=1000 expected=1000 ok=True; P=1000 S=200 credit=1000 -> got=800 expected=800 ok=True"
+  },
+  {
+    "test": "R8.7 Agent grant unlock formula floor(K/3) spot-checks",
+    "ok": true,
+    "detail": "K=0 -> got=0 expected=0 ok=True; K=3 -> got=1 expected=1 ok=True; K=9 -> got=3 expected=3 ok=True; K=10 -> got=3 expected=3 ok=True"
+  },
+  {
+    "test": "R8.7 Agent locked-spend cap floor(3P/4)",
+    "ok": true,
+    "detail": "P=1000 cap=750"
+  },
+  {
+    "test": "\u00a78 R_p^2 convexity holds (unlock_rate <= R_p) for sampled ratios",
+    "ok": true,
+    "detail": "G_actual=50 B_p=100 R_p=0.5 unlock_rate=0.25 convex_le_Rp=True; G_actual=100 B_p=100 R_p=1 unlock_rate=1 convex_le_Rp=True; G_actual=150 B_p=100 R_p=1 unlock_rate=1 convex_le_Rp=True"
+  },
+  {
+    "test": "\u00a78 worked example R_p=0.5 -> unlock=0.25 matches yellowpaper text",
+    "ok": true,
+    "detail": "R_p=0.5 unlock_rate=0.25"
+  },
+  {
+    "test": "R4.1/R4.4 G_n = floor(F_eff/1e9), floors (never rounds up)",
+    "ok": true,
+    "detail": "F_eff=999999999 -> G_n=0 expected=0; F_eff=1000000000 -> G_n=1 expected=1; F_eff=1999999999 -> G_n=1 expected=1; F_eff=2000000000 -> G_n=2 expected=2"
+  },
+  {
+    "test": "R12.1d force_settle conservation P+(1-phi)(E-P)+phi(E-P)=E",
+    "ok": true,
+    "detail": "E=1000 P=300 refund=560.00 penalty=140.00 total=1000.00 ok=True; E=500 P=500 refund=0.00 penalty=0.00 total=500.00 ok=True; E=1000 P=0 refund=800.00 penalty=200.00 total=1000.00 ok=True"
+  },
+  {
+    "test": "R3.6b default validator_attestation_threshold ~= 2/3",
+    "ok": true,
+    "detail": "threshold_parts=666666666 threshold=0.666666666"
+  },
+  {
+    "test": "R3.6b quorum = ceil(active_count * threshold).max(1) spot-checks",
+    "ok": true,
+    "detail": "active_count=1 -> quorum=1 expected=1; active_count=3 -> quorum=2 expected=2; active_count=4 -> quorum=3 expected=3; active_count=100 -> quorum=67 expected=67; active_count=200 -> quorum=134 expected=134"
+  },
+  {
+    "test": "official script `evidence/reproduce.py --check`",
+    "ok": true,
+    "detail": "claim evidence: OK (45ba79596389; 2 artifacts)"
+  },
+  {
+    "test": "official script `evidence/reproduce-audit.py --check`",
+    "ok": true,
+    "detail": "audit-evidence: 5 scenarios, 25 exposure rows; OK"
+  }
+]

@@ -1,0 +1,27 @@
+source,section,requirement_id,mechanism,documented_status,implemented_status,provisional,source_citation,commit
+compute_verification,§3.3,R3.2,TEE attestation (DCAP/dstack) optional HARD tier,DOCUMENTED,LIVE (on-TDX e2e pending),no,yellowpaper.md L3754,70e691c
+compute_verification,§3.3,D-0404,RTMR3 is the ONLY accepted model-root measurement path (changed 2026-10-13),DOCUMENTED,LIVE (CVM RTMR3 extension PLANNED),no,yellowpaper.md L537-538 diff 70e691c,70e691c
+compute_verification,§3.4,R3.1/R3.4a,TOPLOC activation commitment mandatory floor for every session,DOCUMENTED,PARTIAL (commitment required; end-to-end error bound open E.43),no,yellowpaper.md L519 L3757,70e691c
+compute_verification,§3.5,R3.5d,Independent re-execution by 3 bonded checkers unanimous verdict,DOCUMENTED,PLANNED (checker re-prefills inside validator watchtower only; E.53 open),yes,yellowpaper.md L603-620 L3759,70e691c
+compute_verification,§3.6,R3.6b,Validator BFT quorum ceil(active*2/3).max(1) for direct-rail crediting,DOCUMENTED,LIVE,no,yellowpaper.md L638-648 L3760,70e691c
+compute_verification,§4.1,R4.1/R4.2,G_n = floor(F_eff/1e9) via shared deterministic hp_poui::flop_meter,DOCUMENTED,LIVE,no,yellowpaper.md L711-719 L3769,70e691c
+compute_verification,§4.1,R4.3,Reject-only throughput tripwire (never clamp),DOCUMENTED,LIVE,no,yellowpaper.md L720-724 L3771,70e691c
+compute_verification,§4.1,R4.5,Cache-aware settlement discount (KV-cache reuse),DOCUMENTED (explicitly NOT discounted today),PLANNED,no,yellowpaper.md L732-735 L3774,70e691c
+compute_verification,§5.3,E.46,Direct/session capacity evidence - benchmark weights,DOCUMENTED,PENDING; PARTIAL EVIDENCE (runtime-benchmark now compiles in every flavour as of 70e691c; no benchmark run/weights/hash yet),yes,yellowpaper.md diff 70e691c (E.46 text),70e691c
+compute_verification,§5.3,E.47,DA availability anti-grinding anti-withdraw-audit model,DOCUMENTED,GAP - PENDING,yes,yellowpaper.md L3776-3777 diff 70e691c,70e691c
+reward_accounting,§8,R8.1,Performance-locked vesting unlock_rate = R_p^2 clamped,DOCUMENTED,LIVE (Root force_create_grant bypasses baseline check),no,yellowpaper.md L1561-1572 L3801,70e691c
+reward_accounting,§8.2,R8.7,Miner grant unlock quarter-at-start + earn-to-unlock credit (changed 2026-10-13 via D-0517),DOCUMENTED,PARTIAL (pallet still vests linearly with retired performance adjustment; no genesis quarter/credit wired),no,yellowpaper.md L1620-1631 L3804,70e691c
+reward_accounting,§8.2,R8.7,Agent grant spend-to-unlock floor(K/3) credit capped at floor(3P/4) spend (D-0522, new 2026-10-13),DOCUMENTED,PARTIAL (locked compute spend wired; no Agent spend credit or spend cap yet per H.4),no,yellowpaper.md L1642-1654 L3804,70e691c
+reward_accounting,§8.2,R8.7,Validator grant frozen until first halving then daily release,DOCUMENTED,PARTIAL (release order unresolved in E.38 - MUST NOT release until fixed),no,yellowpaper.md L1632-1640 L3804,70e691c
+reward_accounting,§9.1,R9.1/R9.2,Block reward halving schedule 96->48->24->12->6->3 FLOP/block,DOCUMENTED,LIVE,no,yellowpaper.md L1723-1734 L3806,70e691c
+reward_accounting,§9.1,R9.5/R9.12,Four-way reward split 750/100/100/50 ppt (miner/validator/agent/staker),DOCUMENTED,LIVE (agent+staker legs accrue in pool, no distribution policy yet - E.40),no,yellowpaper.md L1756-1783,70e691c
+reward_accounting,§9.1,R9.13,Reward liquidity on issue (no auto-compound/force-stake),DOCUMENTED,LIVE,no,yellowpaper.md L1777-1783 L3807,70e691c
+reward_accounting,§9.1,R9.3,Labs/Foundation subsidy separate mint, halves with reward, terminates era 5,DOCUMENTED,LIVE (implied by H.4 emission/halving/subsidy row),no,yellowpaper.md L1735-1743,70e691c
+reward_accounting,§9.1,R9.6,Tx-fee split 80/10/10 target vs 10-burn/90-author interim (clarified 2026-10-13),DOCUMENTED,PARTIAL,no,yellowpaper.md L1763-1769 diff 70e691c,70e691c
+reward_accounting,§11.1,R11.2b,Current-profile channel payout is payment-only, no public work credit,DOCUMENTED,LIVE payment-only (future audited credit OPEN in E.44),no,yellowpaper.md L1989 L3820,70e691c
+reward_accounting,§12.1,R12.1d,Failed/early-close three-way split P+(1-phi)(E-P)+phi(E-P)=E phi=20%,DOCUMENTED,LIVE,no,yellowpaper.md L2067-2078 L3823,70e691c
+reward_accounting,§12.1,R12.1f,Dispute bisection + default-to-fraud on non-response within 7d window,DOCUMENTED,LIVE (recursive bisection beyond single turn),no,yellowpaper.md L2081-2090 L3825,70e691c
+reward_accounting,Appendix_D,none,Chain inclusion fee terms specified explicitly (new text 2026-10-13),DOCUMENTED (clarification, not a rule change per commit message),NOT_APPLICABLE (editorial),no,yellowpaper.md diff 70e691c Appendix D section,70e691c
+not_available,§15.4,R2.4/R15.4c,Verification-liveness committee gate (protocol-issued attestation duties),DOCUMENTED,PLANNED (no attestation client - E.52; recency still from prover credit only),yes,yellowpaper.md L3744,70e691c
+not_available,§2.3,E.42,Committee seat-capture bound / Sybil capital distinct-capital check,DOCUMENTED,GAP,yes,yellowpaper.md L3745-3747,70e691c
+not_available,§5.4,E.54/E.47,Paid storage production activation (agent memory/data storage),DOCUMENTED,PARTIAL on devnet only; production ACTIVATION BLOCKED,yes,yellowpaper.md L3780-3783,70e691c
