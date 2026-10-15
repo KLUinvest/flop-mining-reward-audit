@@ -263,15 +263,21 @@ def test_force_settle_conservation() -> None:
 
 
 def test_bft_quorum_threshold(params: dict) -> None:
-    """R3.6b: ceil(active_count * validator_attestation_threshold).max(1), threshold default 2/3."""
+    """R3.6b: ceil(active_count * validator_attestation_threshold).max(1), threshold default 2/3.
+
+    Uses exact integer arithmetic throughout (no float), so the ceiling cannot be
+    perturbed by binary floating-point rounding at any active_count. Cross-checked
+    against validator_active_set_cap (1,000) and well beyond it.
+    """
     threshold_parts = int(params["validator_attestation_threshold"]["value"])  # perbill, 666_666_666
     threshold = Decimal(threshold_parts) / Decimal(10**9)
     ok_threshold = abs(threshold - Decimal(2) / Decimal(3)) < Decimal("1e-8")
 
-    import math
-
     def quorum(active_count: int) -> int:
-        return max(math.ceil(active_count * float(threshold)), 1)
+        # ceil(active_count * threshold_parts / 1e9) via exact integer ceil division.
+        numerator = active_count * threshold_parts
+        denominator = 10**9
+        return max(-(-numerator // denominator), 1)
 
     cases = [(1, 1), (3, 2), (4, 3), (100, 67), (200, 134)]
     all_ok = True
@@ -281,9 +287,29 @@ def test_bft_quorum_threshold(params: dict) -> None:
         ok = got == expected
         all_ok = all_ok and ok
         details.append(f"active_count={active} -> quorum={got} expected={expected}")
+
+    validator_active_set_cap = int(params["validator_active_set_cap"]["value"])  # 1,000
+    # Independent cross-check: compare the exact-integer ceil against Decimal's
+    # ROUND_CEILING at every active_count from 1 up to 3x the documented cap, to
+    # rule out an off-by-one at any boundary a spot-check might miss.
+    from decimal import ROUND_CEILING
+
+    mismatches = []
+    for active in range(1, validator_active_set_cap * 3 + 1):
+        exact_decimal_ceil = int((Decimal(active) * threshold).to_integral_value(rounding=ROUND_CEILING))
+        exact_decimal_ceil = max(exact_decimal_ceil, 1)
+        if quorum(active) != exact_decimal_ceil:
+            mismatches.append((active, quorum(active), exact_decimal_ceil))
+    ok_sweep = not mismatches
+
     record("R3.6b default validator_attestation_threshold ~= 2/3", ok_threshold,
            f"threshold_parts={threshold_parts} threshold={threshold}")
     record("R3.6b quorum = ceil(active_count * threshold).max(1) spot-checks", all_ok, "; ".join(details))
+    record(
+        f"R3.6b exact-integer quorum matches Decimal ROUND_CEILING for active_count in [1, {validator_active_set_cap * 3}]",
+        ok_sweep,
+        f"mismatches={mismatches[:5]}" if mismatches else f"0 mismatches over {validator_active_set_cap * 3} values (cap={validator_active_set_cap})",
+    )
 
 
 def run_official_reproduce_scripts() -> None:

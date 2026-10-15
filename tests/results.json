@@ -75,6 +75,11 @@
     "detail": "active_count=1 -> quorum=1 expected=1; active_count=3 -> quorum=2 expected=2; active_count=4 -> quorum=3 expected=3; active_count=100 -> quorum=67 expected=67; active_count=200 -> quorum=134 expected=134"
   },
   {
+    "test": "R3.6b exact-integer quorum matches Decimal ROUND_CEILING for active_count in [1, 3000]",
+    "ok": true,
+    "detail": "0 mismatches over 3000 values (cap=1000)"
+  },
+  {
     "test": "official script `evidence/reproduce.py --check`",
     "ok": true,
     "detail": "claim evidence: OK (45ba79596389; 2 artifacts)"

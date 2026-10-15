@@ -97,35 +97,64 @@ its generated mirror was).
 
 FLOP's "Proof of Useful Inference" is a **tiered hybrid**, not a single primitive:
 
-| Tier | Mechanism | Mandatory? | Documented status (Appendix H.2) |
-|---|---|---|---|
-| 1 | TEE attestation + measured `model_hash` (RTMR3-only as of 2026-10-13) | Optional (raises assurance to HARD tier) | LIVE (on-TDX end-to-end pending; CVM RTMR3 extension itself PLANNED) |
-| 2 | TOPLOC activation commitment (top-128 hidden-state values, prefill only) | **Required for every session** | PARTIAL (commitment required; decode-step coverage and end-to-end error bound open, E.43) |
-| 3 | Independent optimistic re-execution by 3 bonded "checker" identities, unanimous verdict required | **Required** | PLANNED (shipped checker re-prefill lives inside the validator watchtower only; the specified 3-checker VRF-assigned lane is not wired, E.53) |
-| 4 | On-chain validator BFT quorum (≥⌈2/3 × active⌉) crediting | **Required** | LIVE |
+**All "status" values in this table and throughout §3–§4 are copied verbatim from the
+yellowpaper's own Appendix H self-assessment. This audit did not inspect any runtime code,
+binary, or deployment and makes no independent claim about what is actually running anywhere.**
+Where this report uses the word "documented," it means "the yellowpaper's own text asserts
+this" — never "this audit observed this."
 
-Key normative points carried forward unchanged by the 2026-10-13 commits:
-- The protocol explicitly disclaims proving *answer quality* — TOPLOC and re-execution detect
-  model/precision/prompt substitution, not output correctness (R3.4c, normative).
-- `G_n` (billed reference-work) is a **deterministic accounting convention**
-  (`G_n = floor(F_eff / 1e9)`), computed by a shared `no_std` primitive — explicitly **not** a
-  physical FLOP/instruction count, energy measurement, or latency measurement (R4.1–R4.4).
-- A reject-only throughput tripwire exists (never clamps or rewrites a claim) — documented LIVE.
+| Tier | Mechanism | Mandatory per spec text? | Appendix H.2's own self-reported status (NOT independently verified by this audit) |
+|---|---|---|---|
+| 1 | TEE attestation + measured `model_hash` (RTMR3-only as of 2026-10-13) | Optional (raises assurance to HARD tier) | Appendix H.2 states "LIVE (on-TDX e2e pending)"; same appendix separately states the CVM RTMR3 extension step is "PLANNED" |
+| 2 | TOPLOC activation commitment (top-128 hidden-state values, prefill only) | **Required for every session**, per R3.1 | Appendix H.2 states "PARTIAL": commitment required; decode-step coverage and end-to-end error bound left open in E.43 |
+| 3 | Independent optimistic re-execution by 3 bonded "checker" identities, unanimous verdict required | **Required**, per R3.3/R3.5d | Appendix H.2 states "PLANNED": the shipped checker re-prefill lives inside the validator watchtower only; the specified 3-checker VRF-assigned lane is not wired per the text, open item E.53 |
+| 4 | On-chain validator BFT quorum (≥⌈2/3 × active⌉) crediting | **Required**, per R3.4/R3.6 | Appendix H.2 states "LIVE" |
+
+Normative text carried forward unchanged by the 2026-10-13 commits (these are requirements the
+specification states, not implementation observations):
+- The specification explicitly disclaims proving *answer quality* — TOPLOC and re-execution are
+  specified to detect model/precision/prompt substitution, not output correctness (R3.4c,
+  normative text).
+- `G_n` (billed reference-work) is specified as a **deterministic accounting convention**
+  (`G_n = floor(F_eff / 1e9)`), to be computed by a shared `no_std` primitive — the spec text
+  explicitly states this is **not** a physical FLOP/instruction count, energy measurement, or
+  latency measurement (R4.1–R4.4). This formula's arithmetic properties (flooring behavior) were
+  independently re-derived and checked in this audit's own test script (§6) — that is a check of
+  the *formula*, not of whatever code actually runs on any FLOP node.
+- A reject-only throughput tripwire is specified (never clamps or rewrites a claim); Appendix H.3
+  self-reports this as "LIVE." This audit did not run or observe the tripwire itself.
 
 ## 4. Reward-accounting mechanics (§8–§9, §11–§12) — summary of documented rules
 
 ### Emission (protocol-level, independent of any individual miner's behavior)
+
+The emission schedule, split ratios, and genesis-supply bucketing below are specification
+constants taken from `params/flop-protocol-params.yaml` and the normative prose; their arithmetic
+consistency was independently re-derived in this audit's tests (§6). Their deployment status
+(whether a running FLOP node actually applies them) is separately addressed via Appendix H
+self-reports further down this section — the two are kept distinct throughout.
+
 - Per-block reward starts at 96 FLOP, halves every 63,072,000 blocks (~2 years) for 5 eras, then
-  floors at 3 FLOP/block forever. **Verified by direct recomputation in `tests/` (§6 below).**
-- Split 750‑ppt miner / 100‑ppt validator / 100‑ppt agent / 50‑ppt staker (sums to 1000 ppt).
-  Agent and staker legs currently accrue in sovereign pool accounts with **no ratified
-  distribution policy** (open item E.40) — i.e. documented but not yet distributable.
+  floors at 3 FLOP/block forever. **This schedule was independently recomputed from the committed
+  parameter file in `tests/` (§6) and matches the prose exactly.**
+- Split 750‑ppt miner / 100‑ppt validator / 100‑ppt agent / 50‑ppt staker (sums to 1000 ppt,
+  independently re-verified in §6). Agent and staker legs currently accrue in sovereign pool
+  accounts with **no ratified distribution policy** (open item E.40, per the spec text itself) —
+  i.e. specified but not yet specified as distributable even on paper.
 - A separate Labs/Foundation subsidy (8+8 FLOP/block at era 0) halves on the same schedule and
-  terminates at era 5 (not merely floors, like the block reward).
-- All of the above (miner leg, validator leg, subsidy) is documented as **liquid on issue** — no
-  forced staking or vesting of the reward itself (R9.13, re-ratified by D-0518 on 2026-10-13).
+  terminates at era 5 (not merely floors, like the block reward). Total minted amount
+  (1,955,232,000 FLOP) independently re-derived in §6.
+- All of the above (miner leg, validator leg, subsidy) is specified as **liquid on issue** — no
+  forced staking or vesting of the reward itself (R9.1, R9.13, re-ratified by D-0518 on
+  2026-10-13). **Appendix H.4 self-reports this as "LIVE"** (reward liquidity row); this audit did
+  not independently observe any running node to confirm that self-report.
 
 ### Mining-specific reward unlock (airdrop/vesting layer, §8.2 — materially changed 2026-10-13)
+
+The three bullets below are **specification requirements** — what the yellowpaper's normative
+text (R8.7, R8.8) states a Miner/Agent/Validator grant's unlock rule *must* be. They describe the
+rule as written, not any observed running behavior.
+
 - A **Miner** grant unlocks ¼ of principal immediately, the rest only against *earn-to-unlock
   credit*: one FLOP of principal released per FLOP the account receives as a channel's miner in a
   **finalized, dispute-window-cleared** settled session. Block rewards earn **no** credit toward
@@ -137,21 +166,32 @@ Key normative points carried forward unchanged by the 2026-10-13 commits:
   releases one grant per day — but the release order itself remains unresolved (open item E.38),
   so the yellowpaper's own text states Validator grants **MUST NOT** be released until that is
   fixed.
-- **Implementation status (Appendix H.4, unchanged conclusion across both 2026-10-13 commits):**
-  this entire unlock mechanism is **PARTIAL** — the deployed pallet still vests every tier
-  linearly with a *retired* performance adjustment, has no genesis quarter or earn-to-unlock
-  credit wired, and lets any tier spend locked principal without the new spend caps. In other
-  words: **the 2026-10-13 commits changed the specification text, not (yet) the deployed
-  behavior.** This is the single most important finding of this audit for anyone reasoning about
-  *current* testnet mining rewards.
+
+**Appendix H.4's own self-report (unchanged conclusion across both 2026-10-13 commits) states**
+this entire unlock mechanism is **"PARTIAL"**: per that text, the deployed pallet still vests
+every tier linearly with a *retired* performance adjustment, has no genesis quarter or
+earn-to-unlock credit wired, and lets any tier spend locked principal without the new spend caps.
+**This audit did not inspect any runtime, binary, or deployed pallet to confirm Appendix H's own
+characterization** — the finding below is entirely sourced from the yellowpaper's own text, not
+from independent observation:
+
+> According to the yellowpaper's own Appendix H.4, the 2026-10-13 commits changed the
+> *specification* text (new unlock formulas, newly ratified decisions D-0517/D-0522), while the
+> same appendix states the *deployed* pallet behavior has not yet caught up. Readers should treat
+> this as the document's own self-assessment of a spec/implementation gap, not as this audit's
+> independent finding about any running system.
 
 ### Channel settlement and current public-credit status
-- `R11.2b` (unchanged core rule, clarified wording 2026-10-13): current-profile compute-channel
-  settlements are **payment-only** — they do not, today, feed public work-vesting credit or block
-  reward eligibility. Documented status: **LIVE payment-only**; future audited credit is an open
-  item (E.44).
-- `R12.1d` (failed/early-close): a documented three-way conservation split
-  `P + (1-φ)(E-P) + φ(E-P) = E`, φ = 20%, verified algebraically in this audit's tests (§6).
+- `R11.2b` (unchanged core rule, clarified wording 2026-10-13) specifies that current-profile
+  compute-channel settlements are **payment-only** — the rule as written states they do not feed
+  public work-vesting credit or block reward eligibility. **Appendix H.5 self-reports this as
+  "LIVE payment-only"**; future audited credit is an open item in the spec text itself (E.44).
+  This audit did not independently verify the Appendix H.5 self-report against any running code.
+- `R12.1d` (failed/early-close): a specified three-way conservation split
+  `P + (1-φ)(E-P) + φ(E-P) = E`, φ = 20%. This identity's algebraic correctness was independently
+  re-derived and checked for several (E, P) pairs in this audit's tests (§6) — that confirms the
+  *formula is internally consistent as written*, not that any running settlement code implements
+  it correctly.
 
 ## 5. Documented vs. implemented vs. provisional vs. not available
 
@@ -160,17 +200,57 @@ counts by this audit's classification:
 
 | Classification | Meaning used here | Count in matrix |
 |---|---|---|
-| DOCUMENTED + LIVE | Specified in the yellowpaper AND the appendix states it is implemented in the runtime | 9 |
-| DOCUMENTED + PARTIAL | Specified, with the appendix explicitly describing a gap between spec and deployed code | 11 |
-| DOCUMENTED + PLANNED | Specified as a requirement, but the appendix states it is designed/not wired | 2 |
+| DOCUMENTED + LIVE | Specified in the yellowpaper, AND Appendix H's own text states it is implemented | 9 |
+| DOCUMENTED + PARTIAL | Specified, with Appendix H's own text describing a gap between spec and deployed code | 11 |
+| DOCUMENTED + PLANNED | Specified as a requirement, but Appendix H's own text says it is designed/not wired | 2 |
 | DOCUMENTED + GAP/PENDING | Specified as an open problem the yellowpaper itself has not resolved | 4 |
 | Editorial-only (not a new rule) | A 2026-10-13 text clarification the authors themselves flag as non-normative | 1 |
 
-**Every "implemented" status in this matrix is FLOP Labs's own self-reported Appendix H
-classification**, not an independent runtime audit by this report. This audit did not have access
-to the private `flop-core` runtime source and could not independently verify any `LIVE` claim
-against running code. This limitation is stated explicitly in every relevant row of the matrix's
-`implemented_status` column and repeated in §7 below.
+**Every value in the matrix's `implemented_status` column is a direct quotation or close
+paraphrase of FLOP Labs's own Appendix H self-assessment** — it is not an independent runtime
+audit by this report. This audit had no access to the private `flop-core` runtime source and
+performed no independent verification of any `LIVE`/`PARTIAL`/`PLANNED`/`GAP` label against
+actually running code. Every row's citation (`source_citation` column) points to the exact
+Appendix H line making that claim, so a reader can trace each label back to its origin and judge
+its reliability themselves. This limitation is repeated in §7 below.
+
+### 5.1 Matrix line-reference consistency review
+
+As part of this revision, every `source_citation` line number in all 27 matrix rows was
+re-verified against the actual committed `official-yellowpaper/yellowpaper.md` text (`git log -1`
+confirms `HEAD` is still `70e691c758e53eed17a016a02b0a2ae1200d3744`, matching the matrix's
+`commit` column throughout). Method: for each cited line number, `sed -n '<N>p' yellowpaper.md`
+was run and its content compared against the row's claimed mechanism/requirement text.
+
+**Result: all 27 rows' line citations were confirmed accurate** on this pass — each cited line
+number contains the text the row claims it contains (requirement text, Appendix H status-table
+row, or diff context, as applicable). No row was found pointing at the wrong line or an
+unrelated passage.
+
+### 5.2 Test-script false-positive review
+
+The reproducible test script (`tests/test_reward_accounting.py`) was re-read in full for
+potential false positives — logic that would report PASS even when the underlying claim is
+wrong. One issue was found and fixed in this revision:
+
+- **`test_bft_quorum_threshold`** computed the quorum ceiling via
+  `math.ceil(active_count * float(threshold))`. Converting the exact rational threshold
+  (`666666666 / 1e9`) to a binary `float` before multiplying introduces a (tiny) risk that, at
+  some `active_count`, the float product lands just below an integer boundary where the exact
+  value is just above it (or vice versa), silently producing an off-by-one `quorum` that the five
+  original spot-check cases (`active_count` ∈ {1, 3, 4, 100, 200}) would not necessarily catch.
+  **Fix:** replaced the float-based ceiling with exact integer ceiling division
+  (`-(-numerator // denominator)` on the exact integer product), and added a new check that
+  sweeps every `active_count` from 1 to 3,000 (3× `validator_active_set_cap`) comparing the
+  exact-integer result against an independently-computed `Decimal`-with-`ROUND_CEILING` ceiling.
+  This sweep found **zero mismatches**, so the original spot-checks happened not to have hidden a
+  real bug in this case — but the float path was still a latent correctness risk worth removing
+  rather than merely confirming absent-by-luck.
+
+No other false-positive risk was identified: every other test either (a) compares an exact
+`Decimal` computation against an exact `Decimal` expected value with no intermediate float
+conversion, or (b) captures the verbatim exit code and stdout of an external script without
+reinterpreting its result.
 
 ## 6. Reproducible tests performed
 
@@ -181,7 +261,10 @@ access, no identity). Two kinds of checks:
    `params/flop-protocol-params.yaml`, checked against the values stated in the prose (emission
    halving schedule, four-way reward split, genesis-supply bucket sum, subsidy total, Miner/Agent
    grant unlock formulas, `R_p²` convexity, `G_n` floor semantics, `force_settle` conservation
-   identity, BFT quorum rounding).
+   identity, BFT quorum rounding — including an exact-integer sweep of the quorum ceiling over
+   every active-validator count from 1 to 3,000, i.e. 3× the documented
+   `validator_active_set_cap` of 1,000, specifically to catch any floating-point rounding
+   discrepancy that a handful of spot-check cases could miss).
 2. **Invocation of the yellowpaper repository's own published reproduction scripts**
    (`evidence/reproduce.py --check`, `evidence/reproduce-audit.py --check`), run unmodified, with
    their verbatim output captured — this audit did not write or alter their logic, only called
@@ -190,12 +273,16 @@ access, no identity). Two kinds of checks:
 **Actual run, 2026-10-15, this environment (full output in `tests/results.json`):**
 
 ```
-TOTAL: 17  PASS: 17  FAIL: 0
+TOTAL: 18  PASS: 18  FAIL: 0
 ```
 
-All 17 checks passed. No test result in this report or in `tests/results.json` was fabricated,
-pre-written, or adjusted after the fact — the script was executed once, its stdout captured, and
-`results.json` is its direct `json.dump` output. Re-run with:
+All 18 checks passed. No test result in this report or in `tests/results.json` was fabricated,
+pre-written, or adjusted after the fact — the script was executed once after this revision's
+changes, its stdout captured, and `results.json` is its direct `json.dump` output. A prior version
+of this script ran 17 checks using a float-based ceiling for the BFT quorum test; this revision
+replaced that with an exact-integer ceiling and added an explicit sweep test (18th check) to rule
+out any floating-point false positive at scale — see §5.2 above for the full description of the
+fix. Re-run with:
 ```bash
 cd /root/flop/flop-mining-reward-audit
 python3 tests/test_reward_accounting.py
@@ -240,27 +327,37 @@ python3 tests/test_reward_accounting.py
 
 ```
 flop-mining-reward-audit/
+├── README.md                          <- orientation for future readers (start here)
 ├── report/
 │   └── REPORT.md                      <- this file
 ├── matrix/
 │   └── verification_matrix.csv        <- 27-row documented/implemented/provisional/not-available matrix
 ├── tests/
 │   ├── test_reward_accounting.py      <- reproducible, dependency-light verification script
-│   └── results.json                   <- actual captured output of the one real run (17/17 pass)
-├── official-yellowpaper/              <- unmodified git clone of github.com/flop-labs/yellowpaper
-│                                          (HEAD = 70e691c758e53eed17a016a02b0a2ae1200d3744)
-└── sources/                           <- (reserved; see note below)
+│   └── results.json                   <- actual captured output of the most recent real run (18/18 pass)
+├── sources/
+│   ├── SOURCES.txt                    <- one-line pointer to the official repo + pinned commit
+│   └── official-yellowpaper-HEAD.txt  <- the exact commit hash this audit cites throughout
+└── official-yellowpaper/              <- unmodified git clone of github.com/flop-labs/yellowpaper
+                                           (HEAD = 70e691c758e53eed17a016a02b0a2ae1200d3744;
+                                           gitignored — not tracked by this repo's own git history)
 ```
 
 Note: `official-yellowpaper/` is a full git clone kept locally for citation traceability and to
 run its own `evidence/` scripts. It is **not** modified, **not** re-pushed, and **not** a fork
-published anywhere. If a reviewer prefers it excluded from any eventual publication of this audit,
-it can be removed and replaced with a pinned commit reference only.
+published anywhere. It is deliberately excluded from this repository's own git history via
+`.gitignore` (see `sources/SOURCES.txt` and `sources/official-yellowpaper-HEAD.txt` for the pinned
+commit reference that stands in for it in the committed tree). If a reviewer wants it included
+verbatim in an eventual publication, that is a separate decision to be made before any
+publication step.
 
 ## 9. Explicit statement of compliance with constraints
 
-- No GitHub publication occurred. `git status` in this repository shows only local, uncommitted
-  work until a human reviews it.
+- **No GitHub publication occurred.** This repository has one or more **local** git commits
+  (`git log` in this directory shows them) — it is not merely uncommitted work-in-progress, and
+  this report does not claim otherwise. What has *not* happened is any `git push`, any remote
+  configuration (`git remote -v` returns nothing), or any publication to GitHub or any other
+  external host.
 - No Technocore message was sent. No `say`/`proof` command from any Technocore client was
   invoked.
 - No private key or DID was used, read, or referenced. `identity.pem` was not accessed.
