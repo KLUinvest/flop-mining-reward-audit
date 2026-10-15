@@ -1,6 +1,6 @@
 # FLOP Testnet Mining — Verified Compute & Reward Accounting (draft audit)
 
-This repository is a **local, unpublished** technical audit of the official FLOP Network Yellow
+This repository is a **publicly available, independent** technical audit of the official FLOP Network Yellow
 Paper (`flop-labs/yellowpaper`, v0.5.0 draft), focused specifically on two questions:
 
 1. What are the official rules for computing mining/validator/agent rewards?
